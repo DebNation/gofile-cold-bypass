@@ -6,23 +6,16 @@ use std::io::Write;
 use std::{io::stdin, time::Duration};
 
 fn write_to_file(
-    root_url: String,
+    filename: String,
     url_list: Vec<String>,
     names_list: Vec<String>,
 ) -> std::io::Result<()> {
-    let mut gofile_id = "";
-    let re = Regex::new(r"/d/([a-zA-Z0-9]+)").unwrap();
-    if let Some(captures) = re.captures(root_url.as_str()) {
-        if let Some(id) = captures.get(1) {
-            gofile_id = id.as_str();
-        }
-    }
-
-    let filename = gofile_id.to_string() + ".txt";
     let mut file = File::create_new(filename).expect("same file already exists");
 
     for (url, name) in url_list.iter().zip(names_list.iter()) {
         file.write_fmt(format_args!("{}{}\n", url, name)).unwrap();
+        print!("Listing Urls:");
+        println!("{}{}", url, name);
     }
 
     Ok(())
@@ -66,6 +59,14 @@ fn main() {
         names_list.push(text.to_string());
     }
 
-    let _ = write_to_file(root_url, url_list, names_list);
-    println!("Done!");
+    let mut gofile_id = "";
+    let re = Regex::new(r"/d/([a-zA-Z0-9]+)").unwrap();
+    if let Some(id) = re.captures(&root_url).and_then(|cap| cap.get(1)) {
+        gofile_id = id.as_str();
+    }
+
+    let filename = gofile_id.to_string() + ".txt";
+
+    let _ = write_to_file(filename, url_list, names_list);
+    println!("Done!, You can also find these links in {gofile_id}.txt");
 }
